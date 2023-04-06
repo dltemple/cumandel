@@ -6,13 +6,15 @@ CuMandel is an interactive Mandelbrot Set explorer that utilizes the power of NV
 
 ## Table of Contents
 
-- [Features](#features)
-- [Requirements](#requirements)
-- [Installation](#installation)
-- [Usage](#usage)
-- [Directory Structure](#directory-structure)
-- [Contributing](#contributing)
-- [License](#license)
+- [CuMandel: GPU-Accelerated Mandelbrot Set Explorer](#cumandel-gpu-accelerated-mandelbrot-set-explorer)
+  - [Table of Contents](#table-of-contents)
+  - [Features](#features)
+  - [Requirements](#requirements)
+  - [Installation](#installation)
+  - [Usage](#usage)
+  - [Directory Structure](#directory-structure)
+  - [Contributing](#contributing)
+  - [License](#license)
 
 ## Features
 
@@ -32,7 +34,7 @@ CuMandel is an interactive Mandelbrot Set explorer that utilizes the power of NV
 
 1. Clone the repository:
 
-`git clone https://github.com/dltemple/cumandel.git'
+`git clone https://github.com/dltemple/cumandel.git`
 `cd cumandel`
 
 2. Install the required Python packages:
@@ -52,6 +54,7 @@ CuMandel is an interactive Mandelbrot Set explorer that utilizes the power of NV
 
 ## Directory Structure
 
+`
 cumandel/
 │
 ├── include/
@@ -71,7 +74,7 @@ cumandel/
 ├── requirements.txt
 │
 └── README.md
-
+`
 
 ## Contributing
 
