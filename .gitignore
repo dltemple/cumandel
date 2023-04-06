@@ -1,0 +1,7 @@
+# Ignore object files and the binary
+obj/
+mandelbrot
+
+# Ignore any temporary files
+*.swp
+*~

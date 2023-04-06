@@ -1,0 +1,31 @@
+CC = nvcc
+CFLAGS = -std=c++11
+INCLUDE = -I./include
+TARGET = mandelbrot
+
+SRC_DIR = src
+OBJ_DIR = obj
+SRC_FILES = $(wildcard $(SRC_DIR)/*.cu) $(wildcard $(SRC_DIR)/*.cpp)
+OBJ_FILES = $(patsubst $(SRC_DIR)/%.cu,$(OBJ_DIR)/%.o,$(patsubst $(SRC_DIR)/%.cpp,$(OBJ_DIR)/%.o,$(SRC_FILES)))
+
+all: $(TARGET)
+
+$(TARGET): $(OBJ_FILES)
+    $(CC) $(CFLAGS) $(INCLUDE) -o $@ $^
+
+$(OBJ_DIR)/%.o: $(SRC_DIR)/%.cu
+    $(CC) $(CFLAGS) $(INCLUDE) -c -o $@ $<
+
+$(OBJ_DIR)/%.o: $(SRC_DIR)/%.cpp
+    $(CC) $(CFLAGS) $(INCLUDE) -c -o $@ $<
+
+.PHONY: clean
+clean:
+    rm -f $(OBJ_DIR)/*.o $(TARGET)
+
+# Add the following line after the `CFLAGS` definition
+LIBFLAGS = -shared
+
+# Add the following target at the end of the Makefile
+lib: $(OBJ_FILES)
+    $(CC) $(LIBFLAGS) $(CFLAGS) $(INCLUDE) -o libmandelbrot.so $^
