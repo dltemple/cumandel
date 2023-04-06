@@ -54,7 +54,7 @@ CuMandel is an interactive Mandelbrot Set explorer that utilizes the power of NV
 
 ## Directory Structure
 
-`
+```
 cumandel/
 │
 ├── include/
@@ -74,7 +74,7 @@ cumandel/
 ├── requirements.txt
 │
 └── README.md
-`
+```
 
 ## Contributing
 
