@@ -1,26 +1,38 @@
-from flask import Flask, render_template, request, jsonify
-from mandelbrot_wrapper import mandelbrot_set
+from flask import Flask, render_template
+from flask_socketio import SocketIO, emit
+# from mandelbrot_wrapper import render_mandelbrot_cuda
+from mandelbrot import mandelbrot_numpy
 
 app = Flask(__name__)
+socketio = SocketIO(app)
 
 @app.route('/')
 def index():
     return render_template('index.html')
 
-@app.route('/mandelbrot', methods=['POST'])
-def mandelbrot():
-    data = request.get_json()
-    width = data['width']
-    height = data['height']
-    x_min = data['x_min']
-    x_max = data['x_max']
-    y_min = data['y_min']
-    y_max = data['y_max']
-    max_iterations = data['max_iterations']
+@socketio.on('render_mandelbrot')
+def handle_render_mandelbrot(data):
+    def progress_callback(progress):
+        emit('progress', {'progress': progress}, broadcast=True)
 
-    img = mandelbrot_set(width, height, x_min, x_max, y_min, y_max, max_iterations)
+    # if data.get('use_cuda', True):
+    #     mandelbrot_data = render_mandelbrot_cuda(
+    #         data['width'], data['height'],
+    #         data['x_min'], data['x_max'],
+    #         data['y_min'], data['y_max'],
+    #         data['max_iterations'],
+    #         progress_callback
+    #     )
+    # else:
+    mandelbrot_data = mandelbrot_numpy(
+        data['width'], data['height'],
+        data['x_min'], data['x_max'],
+        data['y_min'], data['y_max'],
+        data['max_iterations'],
+        progress_callback
+    )
 
-    return jsonify(img.tolist())
+    emit('rendered_mandelbrot', mandelbrot_data.tolist())
 
 if __name__ == '__main__':
-    app.run(debug=True)
+    socketio.run(app, debug=True)

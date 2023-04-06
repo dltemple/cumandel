@@ -1,0 +1,241 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+    <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/4.5.2/css/bootstrap.min.css">
+    <script src="https://maxcdn.bootstrapcdn.com/bootstrap/4.5.2/js/bootstrap.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/socket.io/4.4.1/socket.io.js" integrity="sha384-FOpYXTg9z1eepQGqva3gqoTjR9zHnyi+kZMnfGSL/c7Q0Hgb6cWlm6IJyaeIXb5a" crossorigin="anonymous"></script>
+    <title>Mandelbrot Set Explorer</title>
+
+    <style>
+        body {
+          margin: 0;
+          display: flex;
+          flex-direction: column;
+          justify-content: center;
+          align-items: center;
+          height: 100vh;
+          background-color: #f0f0f0;
+        }
+
+        h1 {
+          margin-bottom: 20px;
+        }
+      
+        .container {
+          position: relative;
+          width: 80%;
+          height: 80%;
+          background-color: #fff;
+          border-radius: 5px;
+          box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1), 0 1px 3px rgba(0, 0, 0, 0.08);
+          overflow: hidden;
+        }
+
+        canvas {
+            display: block;
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+        }
+    </style>
+</head>
+<body>
+    <h1>Mandelbrot Set Explorer</h1>
+
+    <label for="use-cuda">Use CUDA:</label>
+    <input type="checkbox" id="use-cuda" checked>
+
+    <div class="progress" style="width: 80%; margin-top: 20px;">
+        <div id="progress-bar" class="progress-bar progress-bar-striped bg-success" role="progressbar" style="width: 0%;" aria-valuenow="0" aria-valuemin="0" aria-valuemax="100"></div>
+    </div>
+
+    <label for="max-iterations">Max Iterations:</label>
+    <input type="number" id="max-iterations" value="1000" min="1">
+
+    <label for="x-min">X Min:</label>
+    <input type="number" id="x-min" value="-2" step="0.1">
+
+    <label for="x-max">X Max:</label>
+    <input type="number" id="x-max" value="1" step="0.1">
+
+    <label for="y-min">Y Min:</label>
+    <input type="number" id="y-min" value="-1" step="0.1">
+
+    <label for="y-max">Y Max:</label>
+    <input type="number" id="y-max" value="1" step="0.1">
+
+    <button id="reset-display">Reset</button>
+
+    <div class="container">
+        <canvas id="mandelbrotCanvas"></canvas>
+    </div>
+
+    <script>
+        const canvas = document.getElementById('mandelbrotCanvas');
+        const ctx = canvas.getContext('2d');
+
+        // Debounce function
+        function debounce(func, wait) {
+            let timeout;
+            return function (...args) {
+                clearTimeout(timeout);
+                timeout = setTimeout(() => func.apply(this, args), wait);
+            };
+        }
+        
+        let width = canvas.width = canvas.offsetWidth;
+        let height = canvas.height = canvas.offsetHeight;
+
+        let x_min = -2;
+        let x_max = 1;
+        let y_min = -1;
+        let y_max = 1;
+        let max_iterations = 1000;
+
+        async function drawMandelbrot() {
+            const use_cuda = document.getElementById('use-cuda').checked;
+            
+            const progressBar = document.getElementById('progress-bar');
+            progressBar.style.width = '100%';
+            progressBar.setAttribute('aria-valuenow', 100);
+
+            const response = await fetch('/mandelbrot', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json'
+                },
+                body: JSON.stringify({
+                    width: width,
+                    height: height,
+                    x_min: x_min,
+                    x_max: x_max,
+                    y_min: y_min,
+                    y_max: y_max,
+                    max_iterations: max_iterations,
+                    use_cuda: use_cuda
+                })
+            });
+            const data = await response.json();
+
+            const imgData = ctx.createImageData(width, height);
+            for (let i = 0; i < data.length; i++) {
+                for (let j = 0; j < data[i].length; j++) {
+                    const idx = (i * width + j) * 4;
+                    const color = data[i][j];
+                    imgData.data[idx] = imgData.data[idx + 1] = imgData.data[idx + 2] = color;
+                    imgData.data[idx + 3] = 255;
+                }
+            }
+            ctx.putImageData(imgData, 0, 0);
+            progressBar.style.width = '0%';
+            progressBar.setAttribute('aria-valuenow', 0);
+        }
+
+        // Update the drawMandelbrot function call to use debounce and requestAnimationFrame
+        const debouncedDrawMandelbrot = debounce(() => requestAnimationFrame(drawMandelbrot), 100);
+
+        function resetDisplay() {
+            x_min = -2;
+            x_max = 1;
+            y_min = -1;
+            y_max = 1;
+            document.getElementById('x-min').value = x_min;
+            document.getElementById('x-max').value = x_max;
+            document.getElementById('y-min').value = y_min;
+            document.getElementById('y-max').value = y_max;
+            drawMandelbrot();
+        }
+
+        // Add an event listener for the checkbox
+        document.getElementById('use-cuda').addEventListener('change', debouncedDrawMandelbrot);
+        
+        document.getElementById('max-iterations').addEventListener('change', function() {
+            max_iterations = parseInt(this.value);
+            debouncedDrawMandelbrot();
+        });
+
+        document.getElementById('x-min').addEventListener('change', function() {
+            x_min = parseFloat(this.value);
+            debouncedDrawMandelbrot();
+        });
+
+        document.getElementById('x-max').addEventListener('change', function() {
+            x_max = parseFloat(this.value);
+            debouncedDrawMandelbrot();
+        });
+
+        document.getElementById('y-min').addEventListener('change', function() {
+            y_min = parseFloat(this.value);
+            debouncedDrawMandelbrot();
+        });
+
+        document.getElementById('y-max').addEventListener('change', function() {
+            y_max = parseFloat(this.value);
+            debouncedDrawMandelbrot();
+        });
+
+        document.getElementById('reset-display').addEventListener('click', resetDisplay);
+
+        canvas.addEventListener('wheel', function (e) {
+        e.preventDefault();
+        const scaleFactor = e.deltaY < 0 ? 0.9 : 1.1;
+        const mouseX = e.clientX;
+        const mouseY = e.clientY;
+
+        const x_range = x_max - x_min;
+        const y_range = y_max - y_min;
+
+        x_min += x_range * (1 - scaleFactor) * (mouseX / canvas.width);
+        x_max = x_min + x_range * scaleFactor;
+
+        y_min += y_range * (1 - scaleFactor) * (mouseY / canvas.height);
+        y_max = y_min + y_range * scaleFactor;
+        
+        // Add panning functionality
+    let isPanning = false;
+    let startX, startY;
+
+    canvas.addEventListener('mousedown', function (e) {
+        isPanning = true;
+        startX = e.clientX;
+        startY = e.clientY;
+    });
+
+    canvas.addEventListener('mousemove', function (e) {
+        if (!isPanning) return;
+
+        const deltaX = (e.clientX - startX) / canvas.width * (x_max - x_min);
+        const deltaY = (e.clientY - startY) / canvas.height * (y_max - y_min);
+
+        x_min -= deltaX;
+        x_max -= deltaX;
+        y_min += deltaY;
+        y_max += deltaY;
+
+        startX = e.clientX;
+        startY = e.clientY;
+
+        debouncedDrawMandelbrot();
+    });
+
+    canvas.addEventListener('mouseup', function (e) {
+        isPanning = false;
+    });
+
+    canvas.addEventListener('mouseleave', function (e) {
+        isPanning = false;
+    });
+
+    debouncedDrawMandelbrot();
+
+    });
+
+    drawMandelbrot();
+</script>
+</body>
+</html>
