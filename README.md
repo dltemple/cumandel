@@ -34,3 +34,49 @@ CuMandel is an interactive Mandelbrot Set explorer that utilizes the power of NV
 
 ```git clone https://github.com/dltemple/cumandel.git
 cd cumandel```
+
+2. Install the required Python packages:
+
+`pip install -r requirements.txt`
+
+3. Compile the CUDA C++ code:
+
+`make`
+
+## Usage
+
+1. Run the Flask web application:
+`python src/app.py`
+
+2. Open your web browser and navigate to `http://127.0.0.1:5000/` to start exploring the Mandelbrot Set!
+
+## Directory Structure
+
+cumandel/
+│
+├── include/
+│ └── mandelbrot.h
+│
+├── src/
+│ ├── mandelbrot.cu
+│ ├── main.cpp
+│ ├── mandelbrot_wrapper.py
+│ └── app.py
+│
+├── templates/
+│ └── index.html
+│
+├── Makefile
+│
+├── requirements.txt
+│
+└── README.md
+
+
+## Contributing
+
+Contributions are welcome! Please feel free to submit a Pull Request or create an Issue if you have any suggestions, improvements, or bug reports.
+
+## License
+
+This project is licensed under the MIT License. See the [LICENSE](./LICENSE) file for details.
