@@ -32,8 +32,8 @@ CuMandel is an interactive Mandelbrot Set explorer that utilizes the power of NV
 
 1. Clone the repository:
 
-```git clone https://github.com/dltemple/cumandel.git
-cd cumandel```
+`git clone https://github.com/dltemple/cumandel.git'
+`cd cumandel`
 
 2. Install the required Python packages:
 
